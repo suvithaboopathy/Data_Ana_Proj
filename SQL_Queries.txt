@@ -1,0 +1,182 @@
+
+Queries:
+
+(SQL)Question Set 1:
+
+
+1.  SELECT i.BillingCountry,count(*) as invoices
+    FROM Invoice i
+    JOIN Customer c
+    ON i.CustomerId=c.CustomerId
+    GROUP BY 1
+    ORDER BY 2 DESC;
+
+
+2.  SELECT i.BillingCity Topcity,sum(i.total) AS Amount,c.Country
+    FROM Invoice i 
+    JOIN Customer c
+    ON i.CustomerId=c.CustomerId
+    GROUP BY 1,3
+    ORDER BY 2 DESC
+    LIMIT 1;
+
+
+
+3.  SELECT c.CustomerId customer , sum(total) as SpentMoney
+    FROM Customer c
+    JOIN Invoice i
+    ON c.CustomerId=i.CustomerId
+    JOIN InvoiceLine il
+    ON i.InvoiceId=il.InvoiceLineId
+    GROUP BY 1
+    ORDER BY 2 DESC
+    LIMIT 1;
+
+
+(SQL)Question Set 2:
+
+1.  SELECT c.Email,c.FirstName,c.LastName,g.Name,c.City,sum(i.total) Total
+    FROM Customer c
+    JOIN Invoice i
+    ON i.InvoiceId=c.CustomerId
+    JOIN InvoiceLine il
+    ON il.InvoiceLineId=i.InvoiceId
+    JOIN Track t
+    ON il.InvoiceLineId=t.TrackId
+    JOIN Genre g
+    ON t.GenreId=g.GenreId
+    WHERE g.Name="Rock"
+    GROUP BY 1,2,3,4
+    ORDER BY 1;
+
+
+
+2.  SELECT ar.ArtistId ArtistId,ar.Name ArtistName, count(ar.ArtistId) Songs
+    FROM Artist ar
+    JOIN Album al
+    ON ar.ArtistId=al.ArtistId
+    JOIN Track t
+    ON al.AlbumId=t.AlbumId
+    JOIN Genre g
+    ON g.GenreId=t.GenreId
+    WHERE g.Name="Rock"
+    Group BY 1
+    ORDER BY 3 DESC 
+    LIMIT 10;
+
+
+3.a.  SELECT ar.Name ArtistName,sum(il.UnitPrice*il.Quantity) as Spent_Amount
+      FROM customer c
+      JOIN Invoice i
+      ON c.CustomerId=i.CustomerId
+      JOIN InvoiceLine il
+      ON i.InvoiceId=il.InvoiceId
+      JOIN track t
+      ON t.TrackId=il.TrackId
+      JOIN Album al
+      ON al.AlbumId=t.AlbumId
+      JOIN Artist ar
+      ON ar.ArtistId=al.ArtistId
+      GROUP BY 1
+      ORDER BY 2 DESC
+      LIMIT 10;
+
+
+
+3.b.   SELECT ar.Name ArtistName,c.CustomerId,c.FirstName FirstName , c.LastName LastName ,sum(il.UnitPrice*il.Quantity) as Spent_Amount
+       FROM customer c
+       JOIN Invoice i
+       ON c.CustomerId=i.CustomerId
+       JOIN InvoiceLine il
+       ON i.InvoiceId=il.InvoiceId
+       JOIN track t
+       ON t.TrackId=il.TrackId
+       JOIN Album al
+       ON al.AlbumId=t.AlbumId
+       JOIN Artist ar
+       ON ar.ArtistId=al.ArtistId
+       WHERE ArtistName="Iron Maiden"
+       GROUP BY 1,2,3,4
+       ORDER BY 5 DESC
+       LIMIT 10;
+
+Advanced(SQL)Question Set 3:
+
+1.  SELECT t1.purchase, t1.country, t1.Name, t1.Genre_Id 
+    FROM(SELECT max(purchase) purchases, country, Name, Genre_Id 
+    FROM(SELECT c.country AS country, g.Name, sum(il.quantity) AS purchase,g.GenreId AS Genre_Id
+    FROM Customer c
+    JOIN Invoice i
+    ON i.CustomerId = c.CustomerId
+    JOIN InvoiceLine il 
+    ON il.InvoiceId = i.InvoiceId
+    JOIN Track t
+    ON t.TrackId = il.TrackId
+    JOIN Genre g 
+    ON g.GenreId = t.GenreId 
+    GROUP BY 1, 2, 4
+    ORDER BY 1, 3 DESC)
+    GROUP BY 2) t2
+
+    JOIN (SELECT c.country  country, g.Name, sum(il.quantity)  purchase,g.GenreId Genre_Id
+    FROM Customer c
+    JOIN Invoice i 
+    ON i.CustomerId= c.CustomerId
+    JOIN InvoiceLine il 
+    ON il.InvoiceId = i.InvoiceId
+    JOIN Track t
+    ON t.TrackId = il.TrackId
+    JOIN Genre g 
+    ON g.GenreId = t.GenreId
+    GROUP BY 1, 2, 4
+    ORDER BY 1, 3 DESC) t1
+   
+    ON t1.purchase = t2.purchases AND t1.country = t2.country
+    ORDER BY 2, 1 DESC
+    LIMIT 11;
+
+
+
+2.  SELECT t.Name,t.Milliseconds,al.Title
+    FROM Track t 
+    JOIN Album al
+    ON al.AlbumId=t.AlbumId
+    WHERE t.Milliseconds>(SELECT AVG(Milliseconds) FROM Track) 
+    ORDER By 2 DESC
+    LIMIT 10;
+
+
+
+3.  WITH t1 As(
+    SELECT c.Country country,SUM(i.Total) Spent,c.FirstName First_Name,c.LastName Last_Name, i.CustomerId customer_id 
+    FROM Invoice i
+    JOIN Customer c
+    ON i.CustomerId = c.CustomerId
+    GROUP BY 5
+    ORDER BY 2 DESC),
+
+    t2 AS 
+    (SELECT country,MAX(Spent) Max_Spent,First_Name,Last_Name,customer_id
+    FROM t1
+    GROUP BY 1
+    ORDER BY 2 DESC)
+
+
+    SELECT  t1.country,t1.Spent,t1.First_Name,t1.Last_Name,t1.customer_id
+    FROM  t1
+    JOIN t2
+    ON t1.country = t2.country AND t1.Spent = t2.Max_Spent
+
+    ORDER BY 1 
+    LIMIT 11 OFFSET 14
+
+
+
+
+
+
+
+
+
+
+
